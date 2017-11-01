@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<decorators defaultdir="/decorators">
+    <decorator name="default" page="default.jsp" />
+    <decorator name="login" page="login.jsp" />
+
+    <decorator name="devdefault" page="devdefault.jsp" />
+    <decorator name="devlogin" page="devlogin.jsp" />
+</decorators>

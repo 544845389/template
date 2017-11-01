@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:security="http://www.springframework.org/schema/security"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/security 
+        http://www.springframework.org/schema/security/spring-security-3.2.xsd"
+	   default-autowire="byName">
+
+	<!-- Spring Security -->
+	<security:http pattern="/static/**" security="none"/>
+	<security:http pattern="*.jsp" security="none"/>
+	<security:http pattern="/" security="none"/>
+
+	<security:http entry-point-ref="authenticationEntryPoint">
+		<security:access-denied-handler ref="accessDeniedHandler" />
+		<security:custom-filter before="FORM_LOGIN_FILTER"
+								ref="formLoginFilter" />
+		<security:custom-filter before="LOGOUT_FILTER"
+								ref="logoutFilter" />
+		<security:custom-filter before="FILTER_SECURITY_INTERCEPTOR"
+								ref="fitlerSecurityInterceptor" />
+		<!-- <security:remember-me user-service-ref="userDetailsService" /> -->
+		<security:http-basic />
+	</security:http>
+
+	<!-- 登录地址 -->
+	<bean id="authenticationEntryPoint"
+		  class="com.baichang.framework.security.LoginUrlAuthenticationEntryPointImpl">
+		<property name="loginFormUrl" value="/authenticationEntryPoint" />
+	</bean>
+
+	<!-- 拒绝访问地址 -->
+	<bean id="accessDeniedHandler" class="com.baichang.framework.security.AccessDeniedHandlerAppImpl">
+		<property name="errorPage" value="/accessDeniedHandler"></property>
+	</bean>
+
+	<!-- 登录访问控制 -->
+	<bean id="formLoginFilter" class="com.baichang.framework.security.FormLoginFilterImpl">
+		<property name="authenticationManager" ref="authenticationManager" />
+		<property name="successHandler" value="/web/index"></property>
+		<property name="failureHandler" value="/?error=error"></property>
+	</bean>
+
+
+	<bean id="logoutFilter"
+		  class="org.springframework.security.web.authentication.logout.LogoutFilter">
+		<constructor-arg ref="logoutSuccessHandler" />
+		<constructor-arg>
+			<list>
+				<bean
+						class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler" />
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<!-- 登出地址 -->
+	<bean id="logoutSuccessHandler" class="com.baichang.framework.security.SimpleUrlLogoutSuccessHandlerImpl">
+		<property name="logoutSuccesshandler" value="/"></property>
+	</bean>
+
+	<bean id="fitlerSecurityInterceptor"
+		  class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+		<!-- 获取用户信息 -->
+		<property name="authenticationManager" ref="authenticationManager" />
+		<!-- 匹配权限-->
+		<property name="accessDecisionManager" ref="accessDecisionManager" />
+		<!-- 获取连接地址的权限-->
+		<property name="securityMetadataSource" ref="securityMetadataSource" />
+	</bean>
+	<security:authentication-manager alias="authenticationManager">
+		<security:authentication-provider
+				user-service-ref="userDetailsService">
+			<security:password-encoder hash="md5" />
+		</security:authentication-provider>
+	</security:authentication-manager>
+
+	<bean id="userDetailsService" class="com.baichang.framework.security.UserDetailsServiceImpl" />
+	<bean id="accessDecisionManager" class="com.baichang.framework.security.AccessDecisionManagerImpl" />
+	<bean id="securityMetadataSource"
+		  class="com.baichang.framework.security.FilterInvocationSecurityMetadataSourceImpl" />
+	<bean id="messageSource"
+		  class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basename"
+				  value="classpath:org/springframework/security/messages_zh_CN" />
+	</bean>
+</beans>
